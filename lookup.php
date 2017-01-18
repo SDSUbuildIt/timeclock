@@ -16,7 +16,7 @@
    echo '<meta http-equiv="refresh" content="20;http://buildit.sdsu.edu/lookup-index.php" />';
    ob_flush();
    //return to entry page after 20 seconds
-   $link = mysqli_connect('HOST_REDACTED', 'USERNAME_REDACTED', 'PASSWORD_REDACTED', 'DATABASE_REDACTED', 'CONNECTION_REDACTED');
+      $link = mysqli_connect('HOST_REDACTED', 'USERNAME_REDACTED', 'PASSWORD_REDACTED', 'DATABASE_REDACTED', 'CONNECTION_REDACTED');
      //Connect to localhost, with username root, blank password
      //and the database is "buildit_entry"
 
@@ -70,6 +70,13 @@
 
 	      //TIMETABLE
          $todaytotal = '00:00:00';
+         if ($results['Status'] == '1') {
+           $message = "Currently Clocked In";
+         }
+
+         else {
+           $message = "Currently Clocked Out";
+         }
 
         ?>
         <html><form action="<?php echo htmlentities($_SERVER[‘PHP_SELF’], ENT_QUOTES); ?>" method="POST">
@@ -77,30 +84,24 @@
         </form></html><?php
 
         if(isset( $_POST['form_submit'] )) {
-
-
-
-
 		 //if they're out, set them in and record time in
 	           if ($results['Status'] == 0){
 	             mysqli_query($link, "UPDATE builditentry SET Time_OUT='00:00:00' WHERE RedID=".$redid."");
 	             mysqli_query($link, "UPDATE builditentry SET Status=(1) WHERE RedID=".$redid."");
 	             mysqli_query($link, "UPDATE builditentry SET Time_In=(NOW()) WHERE RedID=".$redid."");
-
+               $message = "Currently Clocked In";
 	           }
-
 	           else {
 	             //if they're in, set them out and update time out, date out, and total time
 	             mysqli_query($link, "UPDATE builditentry SET Time_Out=(NOW()) WHERE RedID=".$redid."");
 	             mysqli_query($link, "UPDATE builditentry SET Date_Out=(NOW()) WHERE RedID=".$redid."");
 	             mysqli_query($link, "UPDATE builditentry SET Status=(0) WHERE RedID=".$redid."");
+               $message = "Currently Clocked Out";
 
 	             //time in
 	             $time1 = new DateTime($results['Time_In']);
-
-	            //get current time in UTC
+	            //get current time
 	             $time2 = new DateTime();
-
 
 	             //Find differenece between times and format
 	             $diffis = $time1->diff($time2);
@@ -114,10 +115,8 @@
 
              //find total time after clocking out
              if ($results['Status'] == 0 && $results['Time_Out'] != '00:00:00'){
-               //time in
-               $time1 = new DateTime($results['Time_In']);
-              //time out
-               $time2 = new DateTime($results['Time_Out']);
+               $time1 = new DateTime($results['Time_In']); //time in
+               $time2 = new DateTime($results['Time_Out']);  //time out
                //Find differenece between times and format
                $diffis = $time1->diff($time2);
                $todaytotal = $diffis->format('%H:%I:%S');
@@ -125,15 +124,8 @@
 
 		   // print header for timeclock table
 		   echo "<span style='width: 200px;float: left;margin: auto;'><h2>Timeclock</h2>";
-
 		   //print time table
-		  if ($results['Status'] == '1') {
-		  	echo "Currently Clocked In";
-		  }
-
-		  else {
-		  	echo "Currently Clocked Out";
-		  }
+                  echo $message;
 
 
 		   echo "<p style='font-size: 16px;'>Time In: ".$results['Time_In']." </br>
