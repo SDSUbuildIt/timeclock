@@ -9,7 +9,8 @@
    ob_flush();
    //return to entry page after 20 seconds
    $link = mysqli_connect('HOST_REDACTED', 'USERNAME_REDACTED', 'PASSWORD_REDACTED', 'DATABASE_REDACTED', 'CONNECTION_REDACTED');
-     //Connect to database
+     //Connect to localhost, with username root, blank password
+     //and the database is "buildit_entry"
 
       if (mysqli_connect_errno()) {
          printf("Connect failed: %s\n", mysqli_connect_error());
@@ -61,26 +62,12 @@
 
 	      //TIMETABLE
 
-		// function clockin() {
+        ?>
+        <html><form action="<?php echo htmlentities($_SERVER[‘PHP_SELF’], ENT_QUOTES); ?>" method="POST">
+            <input type="submit" name="form_submit" value="Clock In/Out">
+        </form></html><?php
 
-		// 	if(isset($_POST['Time_In']))
-
-		// 	echo "hello";
-
-
-		// 	$sql = mysqlquery($link, "UPDATE builditentry SET Time_In=(NOW()) WHERE RedID=".$redid."");
-
-		// }
-
-		 //clock in button
-
-		// echo "<form method='post' action='lookup.php'>
-		// 	<input type='submit' value='In'>
-		// 	</form>";
-
-
-
-
+        if(isset( $_POST['form_submit'] )) {
 
 		 //if they're out, set them in and record time in
 	           if ($results['Status'] == 0){
