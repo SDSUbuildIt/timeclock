@@ -4,6 +4,14 @@
  </head>
  <body>
    <?php
+   /*
+   Written by Jenny Wong-Welch and Lindsay White
+   Last updated: 1/18/2017
+
+   Takes a student ID number, checks the database for information, gives the option to clock in and out,
+   and displays information about the user.
+   */
+
    ob_start();
    echo '<meta http-equiv="refresh" content="20;http://buildit.sdsu.edu/lookup-index.php" />';
    ob_flush();
@@ -61,6 +69,7 @@
                    echo "<h2><$color>After Hours Access: ".$results['MB_S17']."</font></h2>";
 
 	      //TIMETABLE
+         $todaytotal = '00:00:00';
 
         ?>
         <html><form action="<?php echo htmlentities($_SERVER[‘PHP_SELF’], ENT_QUOTES); ?>" method="POST">
@@ -68,6 +77,9 @@
         </form></html><?php
 
         if(isset( $_POST['form_submit'] )) {
+
+
+
 
 		 //if they're out, set them in and record time in
 	           if ($results['Status'] == 0){
@@ -90,32 +102,39 @@
 	             $time2 = new DateTime();
 
 
-
 	             //Find differenece between times and format
 	             $diffis = $time1->diff($time2);
 	             $workduration = $diffis->format('%H%I%S');
-	             $todaytotal = $workduration;
+	             $todaytotal = $diffis->format('%H:%I:%S');
 
 	             //record total time
 	             mysqli_query($link, "UPDATE builditentry SET Total_Time=(Total_Time + $workduration) WHERE RedID=".$redid."");
 	             }
+		}
 
+             //find total time after clocking out
+             if ($results['Status'] == 0 && $results['Time_Out'] != '00:00:00'){
+               //time in
+               $time1 = new DateTime($results['Time_In']);
+              //time out
+               $time2 = new DateTime($results['Time_Out']);
+               //Find differenece between times and format
+               $diffis = $time1->diff($time2);
+               $todaytotal = $diffis->format('%H:%I:%S');
+             }
 
 		   // print header for timeclock table
 		   echo "<span style='width: 200px;float: left;margin: auto;'><h2>Timeclock</h2>";
 
 		   //print time table
 		  if ($results['Status'] == '1') {
-		  	echo "Clocked In";
+		  	echo "Currently Clocked In";
 		  }
 
 		  else {
-		  	echo "Clocked Out";
+		  	echo "Currently Clocked Out";
 		  }
 
-	//	    echo "<form action='http://buildt.sdsu.edu/lookup.php'>
-        //          <input type='submit' value='Clock In' />
-        //      </form>";
 
 		   echo "<p style='font-size: 16px;'>Time In: ".$results['Time_In']." </br>
 		   Time Out: ".$results['Time_Out']."</br>
